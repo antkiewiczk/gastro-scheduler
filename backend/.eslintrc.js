@@ -28,7 +28,6 @@ module.exports = {
     'class-methods-use-this': 'off',
     'react/button-has-type': 'off',
     'no-console': ["error", { allow: ["warn", "error"] }],
-    'no-underscore-dangle' : 'off',
-    'arrow-parens': [2, "as-needed", { "requireForBlockBody": false }]
+    'no-underscore-dangle' : 'off'
   },
 };

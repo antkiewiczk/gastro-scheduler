@@ -1,4 +1,3 @@
-
 import React, { Component } from 'react';
 import Calendar from './components/Calendar';
 
@@ -31,51 +30,49 @@ class App extends Component {
   // fetch data from our data base
   getDataFromDb = () => {
     fetch('http://localhost:3001/api/getData')
-      .then((data) => data.json())
-      .then((res) => this.setState({ data: res.data }));
+      .then(data => data.json())
+      .then(res => this.setState({ data: res.data }));
   };
 
   // our put method that uses our backend api
   // to create new query into our data base
-  putDataToDB = async message => {
-    let currentIds = this.state.data.map((data) => data.id);
+  putDataToDB = async (message) => {
+    const currentIds = this.state.data.map(data => data.id);
     let idToBeAdded = 0;
     while (currentIds.includes(idToBeAdded)) {
       ++idToBeAdded;
     }
-    
+
     const body = JSON.stringify({
       id: idToBeAdded,
-      message: message,
+      message,
     });
 
     try {
       const resp = await fetch('http://localhost:3001/api/putData', {
         method: 'post',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body,
       });
 
       if (resp.ok) {
         this.getDataFromDb();
-      };
-    } catch(e) {
+      }
+    } catch (e) {
       console.error(e);
     }
   };
 
   // our delete method that uses our backend api
   // to remove existing database information
-  deleteFromDB = async idTodelete => {
+  deleteFromDB = async (idTodelete) => {
     parseInt(idTodelete);
     let objIdToDelete = null;
     this.state.data.forEach((dat) => {
-      console.log('dat', dat);
       // eslint-disable-next-line
       if (dat.id == idTodelete) {
-        console.log('dat._id', dat._id);
         objIdToDelete = dat._id;
       }
     });
@@ -88,15 +85,15 @@ class App extends Component {
       const resp = await fetch('http://localhost:3001/api/deleteData', {
         method: 'delete',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body,
       });
 
       if (resp.ok) {
         this.getDataFromDb();
-      };
-    } catch(e) {
+      }
+    } catch (e) {
       console.error(e);
     }
   };
@@ -122,15 +119,15 @@ class App extends Component {
       const resp = await fetch('http://localhost:3001/api/updateData', {
         method: 'post',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body,
       });
 
       if (resp.ok) {
         this.getDataFromDb();
-      };
-    } catch(e) {
+      }
+    } catch (e) {
       console.error(e);
     }
   };
@@ -141,22 +138,26 @@ class App extends Component {
   render() {
     const { data } = this.state;
     return (
-      <div className='app'>
+      <div className="app">
         <ul>
           {data.length <= 0
             ? 'NO DB ENTRIES YET'
-            : data.map((dat) => (
-                <li style={{ padding: '10px' }} key={data.message}>
-                  <span style={{ color: 'gray' }}> id: </span> {dat.id} <br />
-                  <span style={{ color: 'gray' }}> data: </span>
-                  {dat.message}
-                </li>
-              ))}
+            : data.map(dat => (
+              <li style={{ padding: '10px' }} key={data.message}>
+                <span style={{ color: 'gray' }}> id: </span>
+                {' '}
+                {dat.id}
+                {' '}
+                <br />
+                <span style={{ color: 'gray' }}> data: </span>
+                {dat.message}
+              </li>
+            ))}
         </ul>
         <div style={{ padding: '10px' }}>
           <input
             type="text"
-            onChange={(e) => this.setState({ message: e.target.value })}
+            onChange={e => this.setState({ message: e.target.value })}
             placeholder="add something in the database"
             style={{ width: '200px' }}
           />
@@ -168,7 +169,7 @@ class App extends Component {
           <input
             type="text"
             style={{ width: '200px' }}
-            onChange={(e) => this.setState({ idToDelete: e.target.value })}
+            onChange={e => this.setState({ idToDelete: e.target.value })}
             placeholder="put id of item to delete here"
           />
           <button onClick={() => this.deleteFromDB(this.state.idToDelete)}>
@@ -179,18 +180,17 @@ class App extends Component {
           <input
             type="text"
             style={{ width: '200px' }}
-            onChange={(e) => this.setState({ idToUpdate: e.target.value })}
+            onChange={e => this.setState({ idToUpdate: e.target.value })}
             placeholder="id of item to update here"
           />
           <input
             type="text"
             style={{ width: '200px' }}
-            onChange={(e) => this.setState({ updateToApply: e.target.value })}
+            onChange={e => this.setState({ updateToApply: e.target.value })}
             placeholder="put new value of the item here"
           />
           <button
-            onClick={() =>
-              this.updateDB(this.state.idToUpdate, this.state.updateToApply)
+            onClick={() => this.updateDB(this.state.idToUpdate, this.state.updateToApply)
             }
           >
             UPDATE
