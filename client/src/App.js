@@ -8,10 +8,10 @@ class App extends Component {
   state = {
     data: [],
     id: 0,
-    message: null,
+    fullName: null,
+    position: null,
     idToDelete: null,
     idToUpdate: null,
-    objectToUpdate: null,
   };
 
   // when component mounts, first thing it does is fetch all existing data in our db
@@ -36,7 +36,9 @@ class App extends Component {
 
   // our put method that uses our backend api
   // to create new query into our data base
-  putDataToDB = async (message) => {
+  putDataToDB = async () => {
+    const { position, fullName } = this.state;
+
     const currentIds = this.state.data.map(data => data.id);
     let idToBeAdded = 0;
     while (currentIds.includes(idToBeAdded)) {
@@ -45,7 +47,8 @@ class App extends Component {
 
     const body = JSON.stringify({
       id: idToBeAdded,
-      message,
+      fullName,
+      position,
     });
 
     try {
@@ -67,12 +70,13 @@ class App extends Component {
 
   // our delete method that uses our backend api
   // to remove existing database information
-  deleteFromDB = async (idTodelete) => {
-    parseInt(idTodelete);
+  deleteFromDB = async () => {
+    const { idToDelete, data } = this.state;
+
     let objIdToDelete = null;
-    this.state.data.forEach((dat) => {
+    data.forEach(dat => {
       // eslint-disable-next-line
-      if (dat.id == idTodelete) {
+      if (dat.id === idToDelete) {
         objIdToDelete = dat._id;
       }
     });
@@ -100,10 +104,12 @@ class App extends Component {
 
   // our update method that uses our backend api
   // to overwrite existing data base information
-  updateDB = async (idToUpdate, updateToApply) => {
+  updateDB = async () => {
+    const { data, idToUpdate, updateToApply } = this.state;
+
     let objIdToUpdate = null;
-    parseInt(idToUpdate);
-    this.state.data.forEach((dat) => {
+    parseInt(idToUpdate, 10);
+    data.forEach(dat => {
       // eslint-disable-next-line
       if (dat.id == idToUpdate) {
         objIdToUpdate = dat._id;
@@ -112,7 +118,7 @@ class App extends Component {
 
     const body = JSON.stringify({
       id: objIdToUpdate,
-      update: { message: updateToApply },
+      update: { ...updateToApply },
     });
 
     try {
@@ -136,7 +142,8 @@ class App extends Component {
   // it is easy to understand their functions when you
   // see them render into our screen
   render() {
-    const { data } = this.state;
+    const { data, updateToApply } = this.state;
+
     return (
       <div className="app">
         <ul>
@@ -149,50 +156,75 @@ class App extends Component {
                 {dat.id}
                 {' '}
                 <br />
-                <span style={{ color: 'gray' }}> data: </span>
-                {dat.message}
+                <span style={{ color: 'gray' }}> full name: </span>
+                {dat.fullName}
+                <br />
+                <span style={{ color: 'gray' }}> position: </span>
+                {dat.position}
               </li>
             ))}
         </ul>
+
         <div style={{ padding: '10px' }}>
           <input
             type="text"
-            onChange={e => this.setState({ message: e.target.value })}
-            placeholder="add something in the database"
+            onChange={e => this.setState({ position: e.target.value })}
+            placeholder="staff member's position"
             style={{ width: '200px' }}
           />
-          <button onClick={() => this.putDataToDB(this.state.message)}>
+          <input
+            type="text"
+            onChange={e => this.setState({ fullName: e.target.value })}
+            placeholder="staff member full name"
+            style={{ width: '200px' }}
+          />
+          <button onClick={this.putDataToDB}>
             ADD
           </button>
         </div>
+
         <div style={{ padding: '10px' }}>
           <input
             type="text"
             style={{ width: '200px' }}
-            onChange={e => this.setState({ idToDelete: e.target.value })}
+            onChange={e => this.setState({ idToDelete: parseInt(e.target.value, 10) })}
             placeholder="put id of item to delete here"
           />
-          <button onClick={() => this.deleteFromDB(this.state.idToDelete)}>
+          <button onClick={this.deleteFromDB}>
             DELETE
           </button>
         </div>
+
         <div style={{ padding: '10px' }}>
           <input
             type="text"
             style={{ width: '200px' }}
             onChange={e => this.setState({ idToUpdate: e.target.value })}
-            placeholder="id of item to update here"
+            placeholder="id of staff member to update"
           />
           <input
             type="text"
             style={{ width: '200px' }}
-            onChange={e => this.setState({ updateToApply: e.target.value })}
-            placeholder="put new value of the item here"
+            onChange={e => this.setState({
+              updateToApply: {
+                ...updateToApply,
+                position: e.target.value,
+              },
+            })}
+            placeholder="new position"
           />
-          <button
-            onClick={() => this.updateDB(this.state.idToUpdate, this.state.updateToApply)
-            }
-          >
+          <input
+            type="text"
+            style={{ width: '200px' }}
+            onChange={e => this.setState({
+              updateToApply: {
+                ...updateToApply,
+                fullName: e.target.value,
+              },
+            })}
+            placeholder="new full name"
+          />
+          <button onClick={this.updateDB}>
             UPDATE
           </button>
         </div>

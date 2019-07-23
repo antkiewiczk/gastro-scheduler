@@ -1,9 +1,9 @@
-const mongoose = require('mongoose');
-const express = require('express');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const logger = require('morgan');
-const Data = require('./data');
+import mongoose from 'mongoose';
+import express from 'express';
+import cors from 'cors';
+import bodyParser from 'body-parser';
+import logger from 'morgan';
+import Staff from './data';
 
 const app = express();
 app.use(cors());
@@ -30,13 +30,12 @@ app.use(bodyParser.json());
 app.use(logger('dev'));
 
 // set port as 3001 unless specified otherwise
-console.log('process.env.PORT', process.env.PORT);
 app.set('port', process.env.PORT || 3001);
 
 // this is our get method
 // this method fetches all available data in our database
 router.get('/getData', (req, res) => {
-  Data.find((err, data) => {
+  Staff.find((err, data) => {
     if (err) return res.json({ success: false, error: err });
     return res.json({ success: true, data });
   });
@@ -46,7 +45,7 @@ router.get('/getData', (req, res) => {
 // this method overwrites existing data in our database
 router.post('/updateData', (req, res) => {
   const { id, update } = req.body;
-  Data.findByIdAndUpdate(id, update, (err) => {
+  Staff.findByIdAndUpdate(id, update, (err) => {
     if (err) return res.json({ success: false, error: err });
     return res.json({ success: true });
   });
@@ -56,7 +55,7 @@ router.post('/updateData', (req, res) => {
 // this method removes existing data in our database
 router.delete('/deleteData', (req, res) => {
   const { id } = req.body;
-  Data.findByIdAndRemove(id, (err) => {
+  Staff.findByIdAndRemove(id, (err) => {
     if (err) return res.send(err);
     return res.json({ success: true });
   });
@@ -65,17 +64,21 @@ router.delete('/deleteData', (req, res) => {
 // this is our create method
 // this method adds new data in our database
 router.post('/putData', (req, res) => {
-  const data = new Data();
+  const data = new Staff();
 
-  const { id, message } = req.body;
+  const {
+    id, fullName, position, schedule,
+  } = req.body;
 
-  if ((!id && id !== 0) || !message) {
+  if ((!id && id !== 0) || !fullName || !position) {
     return res.json({
       success: false,
       error: 'INVALID INPUTS',
     });
   }
-  data.message = message;
+  data.fullName = fullName;
+  data.schedule = schedule;
+  data.position = position;
   data.id = id;
   data.save((err) => {
     if (err) return res.json({ success: false, error: err });

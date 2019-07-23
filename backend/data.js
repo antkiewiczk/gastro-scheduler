@@ -3,13 +3,15 @@ import mongoose from 'mongoose';
 const { Schema } = mongoose;
 
 // this will be our data base's data structure
-const DataSchema = new Schema(
+const StaffSchema = new Schema(
   {
     id: Number,
-    message: String,
+    fullName: String,
+    position: String,
+    schedule: Object,
   },
   { timestamps: true },
 );
 
 // export the new Schema so we could modify it using Node.js
-module.exports = mongoose.model('Data', DataSchema);
+module.exports = mongoose.model('Staff', StaffSchema);

@@ -19,94 +19,103 @@ class Calendar extends Component {
 
     this.state = {
       currentWeekParsed: [],
-      hourRange: [],
+      weeklySchedule: {},
+      currentDay: null,
     };
   }
 
-    componentDidMount = () => {
-      this.getFullWeek();
+  componentDidMount = () => {
+    this.getFullWeek();
+  }
+
+  getFullWeek = () => {
+    const today = new Date().getDay();
+    const prevMonday = new Date();
+    prevMonday.setDate(prevMonday.getDate() - (prevMonday.getDay() + 6) % 7);
+
+    const currentWeek = [];
+    const nextSunday = new Date();
+    nextSunday.setDate(prevMonday.getDate() + 6);
+    for (let d = prevMonday; d <= nextSunday; d.setDate(d.getDate() + 1)) {
+      currentWeek.push(new Date(d));
     }
 
-    getFullWeek = () => {
-      const today = new Date().getDay();
-      const prevMonday = new Date();
-      prevMonday.setDate(prevMonday.getDate() - (prevMonday.getDay() + 6) % 7);
-
-      const currentWeek = [];
-      const nextSunday = new Date();
-      nextSunday.setDate(prevMonday.getDate() + 6);
-      for (let d = prevMonday; d <= nextSunday; d.setDate(d.getDate() + 1)) {
-        currentWeek.push(new Date(d));
-      }
-
-      const currentWeekParsed = [];
-      currentWeek.map(day => {
-        currentWeekParsed.push({
-          name: days[day.getDay()], year: day.getFullYear(), month: months[day.getMonth()], day: day.getDate(),
-        });
+    const currentWeekParsed = [];
+    currentWeek.map(day => {
+      currentWeekParsed.push({
+        name: days[day.getDay()], year: day.getFullYear(), month: months[day.getMonth()], day: day.getDate(),
       });
+    });
 
-      this.setState({
-        currentWeekParsed,
-      });
+    this.setState({
+      currentWeekParsed,
+    });
+  }
+
+  addHourSchedule = (hour, day) => {
+    const { weeklySchedule } = this.state;
+
+    if (Object.keys(weeklySchedule).length === 0) {
+      weeklySchedule[day] = [hour];
+    } else if (weeklySchedule[day] && weeklySchedule[day].length < 2) {
+      weeklySchedule[day].push(hour);
+    } else if (weeklySchedule[day] && weeklySchedule[day].length === 2) {
+      return null;
+    } else {
+      weeklySchedule[day] = [hour];
     }
 
-    addHourSchedule = (hour, day) => {
-      const { hourRange } = this.state;
+    this.setState({
+      weeklySchedule,
+    });
+  }
 
-      if (hourRange.length === 0) {
-        hourRange.push({ [day]: [hour] });
-      } else {
-        hourRange.map(d => {
-          if (d[day] && d[day].length === 2) {
-            return;
-          } if (parseInt(Object.keys(d), 10) === day) {
-            console.log('parseInt(Object.keys(d), 10)', parseInt(Object.keys(d), 10));
-            d[day].push(hour);
-          } else {
-            hourRange.push({ [day]: [hour] });
-          }
-        });
-      }
+  determineMarkedClass = (day, hour) => {
+    const { weeklySchedule } = this.state;
 
-      this.setState({
-        hourRange,
-      });
+    if (weeklySchedule[day] && weeklySchedule[day].length === 1 && weeklySchedule[day][0] === hour) {
+      return 'mark';
+    } if (weeklySchedule[day] && weeklySchedule[day][0] === hour) {
+      return 'mark-top';
+    } if (weeklySchedule[day] && weeklySchedule[day][1] === hour) {
+      return 'mark-bottom';
+    } if (weeklySchedule[day] && weeklySchedule[day][0] < hour && weeklySchedule[day][1] > hour) {
+      return 'mark-middle';
     }
+  }
 
-    determineMarkedClass = (day, hour) => {
-      const { hourRange } = this.state;
-
-      if (hourRange.includes(hour)) {
-        return 'mark';
-      } if (hourRange[0] < hour && hourRange[1] > hour) {
-        return 'mark';
-      }
-    }
-
-    render() {
-      const { currentWeekParsed, hourRange } = this.state;
-      console.table('hourRange', hourRange);
-      return (
-        <div className="calendar">
-          {/* leave for now */}
-          {/* <div>{`${day.month} ${day.year}`}</div> */}
-          {currentWeekParsed.map(day => (
-            <div className="day">
-              <div className={`day-header ${day.day === new Date().getDate() ? 'today' : ''}`}>
-                <span className="dayOfMonth">{day.day}</span>
-                <span>{day.name}</span>
-              </div>
-              <div className="day-hours">
-                {operationHours.map(hour => <div className={`day-hour ${this.determineMarkedClass(day.day, hour)}`} name={hour} onClick={e => this.addHourSchedule(hour, day.day)}>{`${hour}:00`}</div>)}
-              </div>
+  render() {
+    const { currentWeekParsed, weeklySchedule } = this.state;
+    console.table('weeklySchedule', weeklySchedule);
+    return (
+      <div className="calendar">
+        {/* leave for now */}
+        {/* <div>{`${day.month} ${day.year}`}</div> */}
+        {currentWeekParsed.map(day => (
+          <div className="day">
+            <div className={`day-header ${day.day === new Date().getDate() ? 'today' : ''}`}>
+              <span className="dayOfMonth">{day.day}</span>
+              <span>{day.name}</span>
             </div>
-          ))}
+            <div className="day-hours">
+              {operationHours.map(hour => (
+                <div
+                  className={`day-hour ${this.determineMarkedClass(day.day, hour)}`}
+                  name={hour}
+                  onClick={e => this.addHourSchedule(hour, day.day)}
+                >
+                  {`${hour}:00`}
+                </div>
+              ))
+              }
+            </div>
+          </div>
+        ))}
 
-        </div>
+      </div>
 
-      );
-    }
+    );
+  }
 }
 
 Calendar.propTypes = {

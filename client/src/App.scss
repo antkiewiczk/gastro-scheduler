@@ -21,6 +21,7 @@
             flex-direction: column;
             align-items: center;
             padding: 16px;
+
             &.today {
                 background: darken(lightskyblue, 25%);
             }
@@ -35,7 +36,6 @@
         }
 
         &-hour {
-            // margin: 4px 0;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -46,8 +46,32 @@
             width: 24px;
             cursor: pointer;
             transition: all .15s ease-out;
-            &:hover,
+
             &.mark {
+                background-color: lightskyblue;
+                color: white;
+                &-top {
+                    background-color: lightskyblue;
+                    color: white;
+                    border-bottom-left-radius: 0;
+                    border-bottom-right-radius: 0;
+                }
+
+                &-middle {
+                    background-color: lightskyblue;
+                    color: white;
+                    border-radius: 0;
+                }
+
+                &-bottom {
+                    background-color: lightskyblue;
+                    color: white;
+                    border-top-left-radius: 0;
+                    border-top-right-radius: 0;
+                }
+            }
+
+            &:hover {
                 background-color: lightskyblue;
                 color: white;
             }
