@@ -9,9 +9,22 @@ const StaffSchema = new Schema(
     fullName: String,
     position: String,
     schedule: Object,
+    hourlyRate: Number,
   },
   { timestamps: true },
 );
 
-// export the new Schema so we could modify it using Node.js
-module.exports = mongoose.model('Staff', StaffSchema);
+const OrganisationSchema = new Schema(
+  {
+    name: String,
+    city: String,
+    operatingHours: Array,
+    ownerFullName: String,
+  },
+  { timestamps: true },
+);
+
+const Staff = mongoose.model('Staff', StaffSchema);
+const Organisation = mongoose.model('Organisation', OrganisationSchema);
+
+export { Staff, Organisation };

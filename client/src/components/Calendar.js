@@ -14,12 +14,14 @@ const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 
 const operationHours = range(6, 24);
 
 class Calendar extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
+
+    const { schedule } = props;
 
     this.state = {
       currentWeekParsed: [],
-      weeklySchedule: {},
+      weeklySchedule: schedule,
       currentDay: null,
     };
   }
@@ -86,11 +88,10 @@ class Calendar extends Component {
 
   render() {
     const { currentWeekParsed, weeklySchedule } = this.state;
-    console.table('weeklySchedule', weeklySchedule);
+    const { onSubmit } = this.props;
+    console.log('weeklySchedule', weeklySchedule);
     return (
       <div className="calendar">
-        {/* leave for now */}
-        {/* <div>{`${day.month} ${day.year}`}</div> */}
         {currentWeekParsed.map(day => (
           <div className="day">
             <div className={`day-header ${day.day === new Date().getDate() ? 'today' : ''}`}>
@@ -112,6 +113,7 @@ class Calendar extends Component {
           </div>
         ))}
 
+        <button onClick={() => onSubmit(weeklySchedule)}>SUBMIT</button>
       </div>
 
     );
@@ -119,7 +121,12 @@ class Calendar extends Component {
 }
 
 Calendar.propTypes = {
+  onSubmit: PropTypes.func.isRequired,
+  schedule: PropTypes.object,
+};
 
+Calendar.defaultProps = {
+  schedule: {},
 };
 
 export default Calendar;

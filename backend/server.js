@@ -3,7 +3,8 @@ import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import logger from 'morgan';
-import Staff from './data';
+// eslint-disable-next-line import/named
+import { Staff, Organisation } from './data';
 
 const app = express();
 app.use(cors());
@@ -38,6 +39,47 @@ router.get('/getData', (req, res) => {
   Staff.find((err, data) => {
     if (err) return res.json({ success: false, error: err });
     return res.json({ success: true, data });
+  });
+});
+
+// get organisation
+router.get('/getOrganisation', (req, res) => {
+  Organisation.find((err, data) => {
+    if (err) return res.json({ success: false, error: err });
+    return res.json({ success: true, data });
+  });
+});
+
+// create organisation
+router.put('/putOrganisation', (req, res) => {
+  const organisation = new Organisation();
+
+  const {
+    name, city, ownerFullName, operatingHours,
+  } = req.body;
+  console.log('req.body', req.body);
+  if (!name || !city || !ownerFullName || !operatingHours) {
+    return res.json({
+      success: false,
+      error: 'INVALID INPUTS',
+    });
+  }
+  organisation.name = name;
+  organisation.city = city;
+  organisation.ownerFullName = ownerFullName;
+  organisation.operatingHours = operatingHours;
+  organisation.save((err) => {
+    if (err) return res.json({ success: false, error: err });
+    return res.json({ success: true, data: organisation });
+  });
+});
+
+router.delete('/deleteOrganisation', (req, res) => {
+  const { id } = req.query;
+  console.log('id', id);
+  Organisation.findByIdAndRemove(id, (err) => {
+    if (err) return res.send(err);
+    return res.json({ success: true });
   });
 });
 

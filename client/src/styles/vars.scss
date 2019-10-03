@@ -1,0 +1,18 @@
+// colors
+$bg-color: rgb(235, 235, 235);
+$font-color: #02021e;
+$light-font-color: lighten($font-color, 20%);
+
+$button: forestgreen;
+$button-hover: darken($button, 15%);
+
+// breakpoints
+$belowLarge: (max-width: 1800px);
+$belowDesktop: (max-width: 1280px);
+$belowTablet: (max-width: 768px);
+$belowPhablet: (max-width: 520px);
+
+$aboveDesktop: (min-width: 1280px);
+$aboveTablet: (min-width: 768px);
+$abovePhablet: (min-width: 520px);
+$aboveMobile: (min-width: 320px);
