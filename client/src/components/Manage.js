@@ -2,23 +2,18 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { Delete, Edit } from 'styled-icons/material';
-import { Calendar as CalendarIco, Plus } from 'styled-icons/boxicons-regular';
+import { Calendar as CalendarIco, Plus, ChevronLeft } from 'styled-icons/boxicons-regular';
 
 // components
 import Calendar from './Calendar';
 import Modal from './Modal';
 import Button from '../styledComponents/Button';
 import Container from '../styledComponents/Container';
+import Input from '../styledComponents/Input';
+import Icon from '../styledComponents/Icon';
 
 // utils
 import { belowDesktop } from '../styledComponents/base';
-
-const Input = styled.input`
-  width: 240px;
-  padding: 8px;
-  margin: 12px;
-  font-size: 14px;
-`;
 
 const Flex = styled(Container)`
   display: flex;
@@ -28,7 +23,7 @@ const Flex = styled(Container)`
 `;
 
 const StaffList = styled.div`
-  width: 60%;
+  width: 70%;
   padding: 16px;
   @media ${belowDesktop} {
     width: 100%;
@@ -41,7 +36,7 @@ const Span = styled.span`
 
 const AddStaffMemberForm = styled.div`
   padding: 16px;
-  width: 40%;
+  width: 30%;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -63,25 +58,6 @@ const Li = styled.li`
   span {
     line-height: 1.3;
   }
-`;
-
-const DeleteIcon = styled(Delete)`
-  background: transparent;
-`;
-
-const EditIcon = styled(Edit)`
-  margin-right: 0.5rem;
-  background: transparent;
-`;
-
-const CalendarIcon = styled(CalendarIco)`
-  margin-right: 0.5rem;
-  background: transparent;  
-`;
-
-const PlusIcon = styled(Plus)`
-  margin-right: 0.5rem;
-  background: transparent;  
 `;
 
 class Manage extends Component {
@@ -110,7 +86,7 @@ class Manage extends Component {
       .then(res => this.setState({ staffList: res.data }));
   };
 
-  putDataToDB = async () => {
+  addStaffMember = async () => {
     const {
       position, fullName, hourlyRate, staffList,
     } = this.state;
@@ -145,7 +121,7 @@ class Manage extends Component {
     }
   };
 
-  deleteFromDB = async id => {
+  deleteStaffMember = async id => {
     const { staffList } = this.state;
 
     let objIdToDelete = null;
@@ -177,7 +153,7 @@ class Manage extends Component {
     }
   };
 
-  updateDB = async ({ schedule }) => {
+  updateStaffMember = async ({ schedule }) => {
     const { staffList, idToUpdate, updateToApply } = this.state;
 
     if (schedule) {
@@ -222,7 +198,7 @@ class Manage extends Component {
     }
   };
 
-  editStaffMember = id => {
+  toggleEditModal = id => {
     const { displayModal } = this.state;
     this.setState({
       idToUpdate: id,
@@ -230,11 +206,18 @@ class Manage extends Component {
     });
   }
 
-  addSchedule = id => {
+  toggleScheduleModal = id => {
     const { displayCalendar } = this.state;
     this.setState({
       idToUpdate: id,
       displayCalendar: !displayCalendar,
+    });
+  }
+
+  closeModals = () => {
+    this.setState({
+      displayCalendar: false,
+      displayModal: false,
     });
   }
 
@@ -244,15 +227,20 @@ class Manage extends Component {
     } = this.state;
 
     let memberSchedule = {};
+    let member = {};
     staffList.map(el => {
       if (el.id === idToUpdate) {
         memberSchedule = el.schedule;
+        member = el;
       }
     });
-    console.log('staffList', staffList);
+
     return (
       <Flex>
-        <a href="/dashboard">{'< back'}</a>
+        <a href="/dashboard" style={{ whiteSpace: 'nowrap' }}>
+          <Icon icon={<ChevronLeft />} fill="#02021e" />
+          Go back
+        </a>
         <StaffList>
           <h2>Your staff</h2>
           <Ul>
@@ -275,15 +263,17 @@ class Manage extends Component {
                     <br />
                   </div>
                   <div>
-                    <Button onClick={() => this.editStaffMember(dat.id)}>
-                      <EditIcon size={14} fill="white" />
+                    <Button onClick={() => this.toggleEditModal(dat.id)}>
+                      <Icon icon={<Edit />} marginRight />
                       Edit
                     </Button>
-                    <Button marginLeft onClick={() => this.addSchedule(dat.id)}>
-                      <CalendarIcon size={14} fill="white" />
+                    <Button marginLeft onClick={() => this.toggleScheduleModal(dat.id)}>
+                      <Icon icon={<CalendarIco />} marginRight />
                       Add schedule
                     </Button>
-                    <Button marginLeft onClick={() => this.deleteFromDB(dat.id)}><DeleteIcon size={14} fill="white" /></Button>
+                    <Button marginLeft onClick={() => this.deleteStaffMember(dat.id)}>
+                      <Icon icon={<Delete />} />
+                    </Button>
                   </div>
                 </Li>
               ))}
@@ -295,83 +285,75 @@ class Manage extends Component {
           <Input
             type="text"
             onChange={e => this.setState({ position: e.target.value })}
-            placeholder="staff member's position"
-            style={{ width: '200px' }}
+            placeholder="Staff member's position"
           />
           <Input
             type="text"
             onChange={e => this.setState({ hourlyRate: e.target.value })}
-            placeholder="hourly rate"
-            style={{ width: '200px' }}
+            placeholder="Hourly rate"
           />
           <Input
             type="text"
             onChange={e => this.setState({ fullName: e.target.value })}
-            placeholder="staff member full name"
-            style={{ width: '200px' }}
+            placeholder="Staff member's full name"
           />
-          <Button onClick={this.putDataToDB}>
-            <PlusIcon size={14} fill="white" />
+          <Button onClick={this.addStaffMember}>
+            <Icon icon={<Plus />} marginRight />
             Add
           </Button>
         </AddStaffMemberForm>
 
-        <Modal open={displayCalendar}>
-          <div>
-            <Calendar
-              onSubmit={this.updateDB}
-              id={idToUpdate}
-              schedule={memberSchedule}
-            />
-          </div>
+        {displayCalendar && (
+        <Modal open={displayCalendar} onClose={this.closeModals} size="auto" header="Weekly schedule">
+          <Calendar
+            onSubmit={this.updateStaffMember}
+            id={idToUpdate}
+            schedule={memberSchedule}
+          />
         </Modal>
+        )}
 
-        <Modal open={displayModal}>
-          <div style={{ padding: '10px' }}>
-            <input
-              type="text"
-              style={{ width: '200px' }}
-              onChange={e => this.setState({ idToUpdate: e.target.value })}
-              placeholder="id of staff member to update"
-            />
-            <input
-              type="text"
-              style={{ width: '200px' }}
-              onChange={e => this.setState({
-                updateToApply: {
-                  ...updateToApply,
-                  position: e.target.value,
-                },
-              })}
-              placeholder="new position"
-            />
-            <input
-              type="text"
-              style={{ width: '200px' }}
-              onChange={e => this.setState({
-                updateToApply: {
-                  ...updateToApply,
-                  fullName: e.target.value,
-                },
-              })}
-              placeholder="new full name"
-            />
-            <input
-              type="number"
-              style={{ width: '200px' }}
-              onChange={e => this.setState({
-                updateToApply: {
-                  ...updateToApply,
-                  hourlyRate: e.target.value,
-                },
-              })}
-              placeholder="new hourly rate"
-            />
-            <Button onClick={this.updateDB}>
+        {displayModal && (
+        <Modal open={displayModal} onClose={this.closeModals} header="Edit staff member" size="small">
+          <Input
+            type="text"
+            onChange={e => this.setState({
+              updateToApply: {
+                ...updateToApply,
+                position: e.target.value,
+              },
+            })}
+            value={member.position}
+            placeholder="New position"
+          />
+          <Input
+            type="text"
+            onChange={e => this.setState({
+              updateToApply: {
+                ...updateToApply,
+                fullName: e.target.value,
+              },
+            })}
+            value={member.fullName}
+            placeholder="New full name"
+          />
+          <Input
+            type="number"
+            onChange={e => this.setState({
+              updateToApply: {
+                ...updateToApply,
+                hourlyRate: e.target.value,
+              },
+            })}
+            value={member.hourlyRate}
+            placeholder="New hourly rate"
+          />
+          <Button onClick={this.updateStaffMember} marginTop>
             Update
-            </Button>
-          </div>
+          </Button>
         </Modal>
+        )}
+
       </Flex>
     );
   }

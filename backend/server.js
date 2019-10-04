@@ -109,7 +109,7 @@ router.post('/putData', (req, res) => {
   const data = new Staff();
 
   const {
-    id, fullName, position, schedule,
+    id, fullName, position, schedule, hourlyRate,
   } = req.body;
 
   if ((!id && id !== 0) || !fullName || !position) {
@@ -121,6 +121,7 @@ router.post('/putData', (req, res) => {
   data.fullName = fullName;
   data.schedule = schedule;
   data.position = position;
+  data.hourlyRate = hourlyRate;
   data.id = id;
   data.save((err) => {
     if (err) return res.json({ success: false, error: err });

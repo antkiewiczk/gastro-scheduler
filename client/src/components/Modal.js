@@ -1,7 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-
 import styled, { css } from 'styled-components';
+import { Close } from 'styled-icons/material';
+
+import { button } from '../styledComponents/base';
 
 const ModalOverlay = styled.div`
     display: none;
@@ -10,37 +12,61 @@ const ModalOverlay = styled.div`
     width: 100%;
     top: 0;
     height: 100%;
+    z-index: 10;
+    justify-content: center;
+    align-items: center;
     background-color: rgba(0, 0, 0, 0.6);
-    z-index: 1000;
     ${props => props.open && css`
-        display: block;
+      display: flex;
     `}
 `;
 
-const ModalContainer = styled.div`
-    position: absolute;
-    left: 0;
-    width: 100%;
-    top: 0;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+const Wrapper = styled.div`
+  ${({ size }) => {
+    if (size === 'small') {
+      return css`
+    width: 360px;  
+  `;
+    } if (size === 'large') {
+      return css`
+        width: 1200px;
+      `;
+    } if (size === 'auto') {
+      return css`
+      width: auto
+      `;
+    }
+  }}
 `;
 
 const Main = styled.main`
-    padding: 32px;
+    padding: 1.5rem;
     background-color: white;
+    display: flex;
+    flex-direction: column;
 `;
 
-const Close = styled.button`
+const CloseButton = styled(Close)`
     position: absolute;
     right: 16px;
     top: 16px;
     background: transparent;
-    border: 0;
-    color: white;
-    font-size: 28px;
+    cursor: pointer;
+`;
+
+const Header = styled.header`
+  padding: 1.5rem 1.5rem 1rem 1.5rem;
+  background-color: white;
+  position: relative;
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 5%;
+    width: 90%;
+    height: 1px;
+    background: ${button};
+  }
 `;
 
 class Modal extends React.Component {
@@ -61,37 +87,36 @@ class Modal extends React.Component {
   }
 
   modalClose = event => {
+    const { onClose } = this.props;
+    const { modalOpened } = this.state;
     if (event) {
       event.preventDefault();
     }
-    this.setState({ modalOpened: !this.state.modalOpened });
-    if (this.props.onClose) {
-      this.props.onClose();
+    this.setState({ modalOpened: !modalOpened });
+
+    if (onClose) {
+      onClose();
     }
   };
 
   render() {
     const {
-      header, headerClass, bodyClass,
+      header, children, size,
     } = this.props;
 
     const { modalOpened } = this.state;
 
     return (
       <ModalOverlay open={modalOpened}>
-        <ModalContainer>
-          <div style={{ width: '800px' }}>
-            <Close onClick={this.modalClose}>
-                X
-            </Close>
-            <header>
-              <h3>{header}</h3>
-            </header>
-            <Main>
-              {this.props.children}
-            </Main>
-          </div>
-        </ModalContainer>
+        <Wrapper size={size}>
+          <CloseButton onClick={this.modalClose} size={40} fill="white" />
+          <Header>
+            <h4>{header}</h4>
+          </Header>
+          <Main>
+            {children}
+          </Main>
+        </Wrapper>
       </ModalOverlay>
     );
   }
@@ -100,18 +125,16 @@ class Modal extends React.Component {
 Modal.propTypes = {
   onClose: PropTypes.func.isRequired,
   open: PropTypes.bool,
-  header: PropTypes.node,
+  header: PropTypes.string,
   children: PropTypes.oneOfType([PropTypes.element, PropTypes.array])
     .isRequired,
-  bodyClass: PropTypes.string,
-  headerClass: PropTypes.string,
+  size: PropTypes.oneOf(['small', 'large', 'auto']),
 };
 
 Modal.defaultProps = {
   open: false,
   header: null,
-  bodyClass: '',
-  headerClass: '',
+  size: 'small',
 };
 
 export default Modal;

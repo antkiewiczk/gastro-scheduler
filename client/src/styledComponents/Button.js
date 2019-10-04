@@ -17,7 +17,11 @@ const Button = styled.button`
     cursor: pointer;
 
     ${props => props.marginLeft && css`
-        margin-left: 16px;
+        margin-left: 1rem;
+    `}
+
+    ${props => props.marginTop && css`
+        margin-top: 1rem;
     `}
 
     &:hover {

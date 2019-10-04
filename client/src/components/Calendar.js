@@ -1,9 +1,104 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import styled, { css } from 'styled-components';
+import { darken } from 'polished';
+
+// components
+import Button from '../styledComponents/Button';
+
+const CalendarWrapper = styled.div`
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  overflow-y: scroll;
+`;
+
+const Day = styled.div`
+  display: flex;
+  padding: 0 8px;
+  flex-direction: column;
+  width: 150px;
+`;
+
+const DayOfMonth = styled.span`
+  color: white;
+  font-size: 18px;
+  margin-bottom: 8px;
+`;
+
+const Header = styled.div`
+  background: lightskyblue;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px;
+  ${({ today }) => today && css`
+    background: ${darken(0.25, 'lightskyblue')};
+  `}
+`;
+
+const Hours = styled.div`
+  background: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+`;
+
+const Hour = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 22px;
+  border-radius: 50%;
+  height: 24px;
+  width: 24px;
+  cursor: pointer;
+  transition: all .15s ease-out;
+
+  ${({ mark }) => {
+    switch (mark) {
+      case 'mark':
+        return css`
+           background-color: lightskyblue;
+           color: white;
+        `;
+      case 'top':
+        return css`
+          background-color: lightskyblue;
+           color: white;
+          border-bottom-left-radius: 0;
+                  border-bottom-right-radius: 0;
+        `;
+      case 'bottom':
+        return css`
+          background-color: lightskyblue;
+             color: white;
+             border-top-left-radius: 0;
+             border-top-right-radius: 0;
+        `;
+      case 'middle':
+        return css`
+          background-color: lightskyblue;
+             color: white;
+             border-radius: 0;
+        `;
+      default:
+        return css``;
+    }
+  }}
+
+ &:hover {
+    background-color: lightskyblue;
+    color: white;
+   }
+`;
 
 const range = (start, end) => {
   const hours = [];
-  for (let i = start; i <= end; i++) {
+  for (let i = start; i <= end; i += 1) {
     hours.push(i);
   }
   return hours;
@@ -11,7 +106,7 @@ const range = (start, end) => {
 
 const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-const operationHours = range(6, 24);
+const operationHours = range(7, 22);
 
 class Calendar extends Component {
   constructor(props) {
@@ -32,12 +127,11 @@ class Calendar extends Component {
 
   getFullWeek = () => {
     const today = new Date().getDay();
-    const prevMonday = new Date();
-    prevMonday.setDate(prevMonday.getDate() - (prevMonday.getDay() + 6) % 7);
+    const prevMonday = this.getPreviousMonday();
 
     const currentWeek = [];
-    const nextSunday = new Date();
-    nextSunday.setDate(prevMonday.getDate() + 6);
+    const milliseconds = prevMonday.getTime() + (6 * 60 * 60 * 24 * 1000);
+    const nextSunday = new Date(milliseconds);
     for (let d = prevMonday; d <= nextSunday; d.setDate(d.getDate() + 1)) {
       currentWeek.push(new Date(d));
     }
@@ -54,13 +148,31 @@ class Calendar extends Component {
     });
   }
 
+  getPreviousMonday = () => {
+    const date = new Date();
+    const day = date.getDay();
+    let prevMonday;
+    if (date.getDay() === 0) {
+      prevMonday = new Date().setDate(date.getDate() - 7);
+    } else {
+      prevMonday = new Date().setDate(date.getDate() - day + 1);
+    }
+
+    return new Date(prevMonday);
+  }
+
   addHourSchedule = (hour, day) => {
     const { weeklySchedule } = this.state;
 
     if (Object.keys(weeklySchedule).length === 0) {
       weeklySchedule[day] = [hour];
     } else if (weeklySchedule[day] && weeklySchedule[day].length < 2) {
-      weeklySchedule[day].push(hour);
+      if (weeklySchedule[day][0] < hour) {
+        weeklySchedule[day].push(hour);
+      } else {
+        // first selected hour was higher than second selected hour e.g 17 and 10 -> we want 10 - 17
+        weeklySchedule[day].unshift(hour);
+      }
     } else if (weeklySchedule[day] && weeklySchedule[day].length === 2) {
       return null;
     } else {
@@ -78,44 +190,47 @@ class Calendar extends Component {
     if (weeklySchedule[day] && weeklySchedule[day].length === 1 && weeklySchedule[day][0] === hour) {
       return 'mark';
     } if (weeklySchedule[day] && weeklySchedule[day][0] === hour) {
-      return 'mark-top';
+      return 'top';
     } if (weeklySchedule[day] && weeklySchedule[day][1] === hour) {
-      return 'mark-bottom';
+      return 'bottom';
     } if (weeklySchedule[day] && weeklySchedule[day][0] < hour && weeklySchedule[day][1] > hour) {
-      return 'mark-middle';
+      return 'middle';
     }
   }
 
   render() {
     const { currentWeekParsed, weeklySchedule } = this.state;
     const { onSubmit } = this.props;
-    console.log('weeklySchedule', weeklySchedule);
+
     return (
-      <div className="calendar">
-        {currentWeekParsed.map(day => (
-          <div className="day">
-            <div className={`day-header ${day.day === new Date().getDate() ? 'today' : ''}`}>
-              <span className="dayOfMonth">{day.day}</span>
-              <span>{day.name}</span>
-            </div>
-            <div className="day-hours">
-              {operationHours.map(hour => (
-                <div
-                  className={`day-hour ${this.determineMarkedClass(day.day, hour)}`}
-                  name={hour}
-                  onClick={e => this.addHourSchedule(hour, day.day)}
-                >
-                  {`${hour}:00`}
-                </div>
-              ))
+      <>
+        <CalendarWrapper>
+          {currentWeekParsed.map(day => (
+            <Day>
+              <Header today={day.day === new Date().getDate()}>
+                <DayOfMonth>{day.day}</DayOfMonth>
+                <span>{day.name}</span>
+              </Header>
+              <Hours>
+                {operationHours.map(hour => (
+                  <Hour
+                    mark={this.determineMarkedClass(day.day, hour)}
+                    name={hour}
+                    onClick={e => this.addHourSchedule(hour, day.day)}
+                  >
+                    {`${hour}:00`}
+                  </Hour>
+                ))
               }
-            </div>
-          </div>
-        ))}
+              </Hours>
+            </Day>
+          ))}
 
-        <button onClick={() => onSubmit(weeklySchedule)}>SUBMIT</button>
-      </div>
-
+        </CalendarWrapper>
+        <div>
+          <Button onClick={() => onSubmit(weeklySchedule)}>Submit</Button>
+        </div>
+      </>
     );
   }
 }
